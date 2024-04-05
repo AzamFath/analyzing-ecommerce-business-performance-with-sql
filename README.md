@@ -18,27 +18,26 @@ The dataset used can be downloaded from [dataset source](https://drive.google.co
 ## Data Analysis
 In this project, I use SQL to analyze the data. The file `SQL Query.docx` presents detailed analysis steps. However, here I will only display the results of data analysis according to the research questions that have been created.
 
-
 1. Annual Customer Activity Growth
 
     A. Average Monthly Active Users
-		```sql
+	```sql
 		select 
 			order_year,
 			round(avg(MAU),2) as average_mau
 		from	
 			(select 
-		date_part('year', o.order_purchase_timestamp) as order_year,
-		date_part('month', o.order_purchase_timestamp) as order_monnth,
+				date_part('year', o.order_purchase_timestamp) as order_year,
+				date_part('month', o.order_purchase_timestamp) as order_monnth,
 				count(distinct customer_unique_id) as MAU
 			from orders_dataset o
 			join customer_dataset c on o.customer_id = c.customer_id
 			group by 1,2) subq
 		group by 1
-		```
+	```
 
     B. New Customers
-		```sql
+	```sql
 		select 
 			date_part('year', order_year) as order_year,
 			count(1) as new_customer
@@ -50,16 +49,16 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 			join customer_dataset c on o.customer_id = c.customer_id
 			group by 1) subq
 		group by 1
-		```
+	```
 
     C. Repeat Customers
-		```sql
+	```sql
 		select
 			order_year,
 			count(distinct customer_unique_id) as repeating_customers
 		from
 			(select 
-		date_part('year', o.order_purchase_timestamp) as order_year,
+				date_part('year', o.order_purchase_timestamp) as order_year,
 				c.customer_unique_id,
 				count(1) as purchase_frequency
 			from orders_dataset o
@@ -67,26 +66,26 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 			group by 1,2
 			having count(1)>1) subq
 		group by 1
-		```
+	```
 
     D. Average Order Frequency
-		```sql
+	```sql
 		select
 			order_year,
 			round(avg(purchase_frequency),3) as avg_purchase_frequency
 		from
 			(select 
-		date_part('year', o.order_purchase_timestamp) as order_year,
+				date_part('year', o.order_purchase_timestamp) as order_year,
 				c.customer_unique_id,
 				count(1) as purchase_frequency
 			from orders_dataset o
 			join customer_dataset c on o.customer_id = c.customer_id
 			group by 1,2) subq
 		group by 1
-		```
-
+	```
+ 
     E. Combining the Four Metrics
-		```sql
+	```sql
 		with 
 
 		MAU as(
@@ -95,8 +94,8 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 			round(avg(MAU),2) as average_mau
 		from	
 			(select 
-		date_part('year', o.order_purchase_timestamp) as order_year,
-		date_part('month', o.order_purchase_timestamp) as order_monnth,
+				date_part('year', o.order_purchase_timestamp) as order_year,
+				date_part('month', o.order_purchase_timestamp) as order_monnth,
 				count(distinct customer_unique_id) as MAU
 			from orders_dataset o
 			join customer_dataset c on o.customer_id = c.customer_id
@@ -122,7 +121,7 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 			count(distinct customer_unique_id) as repeating_customers
 		from
 			(select 
-		date_part('year', o.order_purchase_timestamp) as order_year,
+				date_part('year', o.order_purchase_timestamp) as order_year,
 				c.customer_unique_id,
 				count(1) as purchase_frequency
 			from orders_dataset o
@@ -137,7 +136,7 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 			round(avg(purchase_frequency),3) as avg_purchase_frequency
 		from
 			(select 
-		date_part('year', o.order_purchase_timestamp) as order_year,
+				date_part('year', o.order_purchase_timestamp) as order_year,
 				c.customer_unique_id,
 				count(1) as purchase_frequency
 			from orders_dataset o
@@ -155,14 +154,14 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 		join new_customer nc on mau.order_year = nc.order_year
 		join repeat_customer rc on rc.order_year = mau.order_year
 		join avg_purchase_freq apf on apf.order_year = mau.order_year
-		```
+	```
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%200-1.png)
 
 2. Product Category Quality Annually
 
     A. Revenue per Year
-		```sql
+	```sql
 		create table revenue_per_year as
 		select
 			date_part('year', order_purchase_timestamp) as year,
@@ -176,10 +175,10 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 		join orders_dataset o on subq.order_id = o.order_id
 		where o.order_status = 'delivered'
 		group by 1
-		```
+	```
 
    B. Number of Canceled Orders per Year
-		```sql
+	```sql
 		create table cancel_per_year as
 		select 
 			date_part('year', order_purchase_timestamp) as year,
@@ -187,10 +186,10 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 		from orders_dataset
 		where order_status = 'canceled'
 		group by 1
-		```
+	```
 
-	C. Categories Generating the Highest Revenue per Year
-		```sql
+    C. Categories Generating the Highest Revenue per Year
+	```sql
 		create table top_product_revenue_per_year as
 		select	
 			year,
@@ -201,7 +200,7 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 				date_part('year', o.order_purchase_timestamp) as year,
 				p.product_category_name,
 				sum(price+freight_value) as revenue,
-		rank() over(partition by date_part('year', o.order_purchase_timestamp)
+				rank() over(partition by date_part('year', o.order_purchase_timestamp)
 				order by sum(price+freight_value) desc)
 			from order_items_dataset oi
 			join product_dataset p on oi.product_id = p.product_id
@@ -209,10 +208,10 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 			where o.order_status = 'delivered'
 			group by 1,2) subq
 		where rank = 1
-		```
+	```
 
-	D. Categories Experiencing the Largest Number of Canceled Orders per Year
-		```sql
+    D. Categories Experiencing the Largest Number of Canceled Orders per Year
+	```sql
 		create table top_cancel_product_per_year as
 		select	
 			year,
@@ -223,7 +222,7 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 				date_part('year', o.order_purchase_timestamp) as year,
 				p.product_category_name,
 				count(2) as num_canceled,
-		rank() over(partition by date_part('year', o.order_purchase_timestamp)
+				rank() over(partition by date_part('year', o.order_purchase_timestamp)
 				order by count(1) desc)
 			from order_items_dataset oi
 			join product_dataset p on oi.product_id = p.product_id
@@ -231,10 +230,10 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 			where o.order_status = 'canceled'
 			group by 1,2) subq
 		where rank = 1
-		```
+	```
 
-	E. Combining the Four Tables
-		```sql
+    E. Combining the Four Tables
+	```sql
 		select 
 			cpy.year,
 			cpy.num_canceled_booking,
@@ -247,29 +246,29 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 		join revenue_per_year rpy on cpy.year = rpy.year
 		join top_cancel_product_per_year tcp on tcp.year = cpy.year
 		join top_product_revenue_per_year tpr on tpr.year = cpy.year
-		```
+	```
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%200-2.png)
 
 3. Annual Payment Method Usage
 
-	A. Total Number of Each Payment Type Usage
-		```sql
+    A. Total Number of Each Payment Type Usage
+	```sql
 		select 
 				payment_type,
 				count(1) as num_payment
 		from order_payments_dataset
 		group by 1
 		order by 2 desc
-		```
+	```
 
-	B. Number of Usage for Each Payment Type
-		```sql
+    B. Number of Usage for Each Payment Type
+	```sql
 		select 
-				payment_type,
-		sum(case when year = '2016' then num_used else 0 end) as year_2016,
-		sum(case when year = '2017' then num_used else 0 end) as year_2017,
-		sum(case when year = '2018' then num_used else 0 end) as year_2018
+			payment_type,
+			sum(case when year = '2016' then num_used else 0 end) as year_2016,
+			sum(case when year = '2017' then num_used else 0 end) as year_2017,
+			sum(case when year = '2018' then num_used else 0 end) as year_2018
 		from
 				(select 
 					date_part('year', o.order_purchase_timestamp) as year,
@@ -279,39 +278,39 @@ In this project, I use SQL to analyze the data. The file `SQL Query.docx` presen
 				join orders_dataset o on o.order_id = op.order_id
 				group by 1, 2) subq
 		group by 1
-		```
+	```
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%200-3.png)
 
 ## Conclusion
 The analysis results indicate that:
 1. The growth of new customers compared to returning customers annually, 
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%201.png)
 
 and the monthly count of active customers each year.
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%202.png)
 
-2. Based on the analysis results, the most purchased product each year is [Product A], 
+2. Based on the analysis results, the most purchased product each year is  
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%203.png)
 
-and the most canceled product each year is [Product B]. 
+and the most canceled product each year is  
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%204.png)
 
-Meanwhile, the percentage of the total for the most purchased product is [percentage]%, 
+Meanwhile, the percentage of the total for the most purchased product is  
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%205.png)
 
-and for the most canceled product is [percentage]%.
+and for the most canceled product is 
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%206.png)
 
 3. Based on the previous analysis results, the payment method most used by customers is Credit Card.
 
-![Data Results](https://github.com/AzamFath/predict-customer-clicked-ads-classification/blob/main/fig%201.png)
+![Data Results](https://github.com/AzamFath/analyzing-ecommerce-business-performance-with-sql/blob/main/fig%207.png)
 
 ## Recommendations
 Based on the analysis results, several recommendations that can be considered by the business owner are:
